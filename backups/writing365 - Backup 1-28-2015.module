@@ -1,0 +1,861 @@
+<?php
+/* File: writing365.module
+ * Version 7102
+ * Updated 1/9/2015
+ * Changes:
+ * writing365.module:
+ * - cleaned up the code to have more consistent code formatting
+ * - repositioned functions in the file
+ * - writing365_node_insert & writing365_node_update:
+ *    ~ added variables $words_per_minute and $flag. Flag is set to 1 if the default
+ *      value of the hidden_wordcount is not changed from 'nojs'.
+ *	  ~ added variable $total_time, corresponding to the total time writing.
+ * 			x node_update overwriting old value in database, need to have
+ *			  total accumulated time writing from all edits of the same journal.
+ *    ~ str_word_count is used if javascript is turned off
+ *    ~ notifies user to turn on javascript if $flag == 1
+ * - writing365_form_node_form_alter:
+ *    ~ drupal_add_js now adds two files: wordcount.js and words_per_minute.js
+ *	  - added css for the scorecard into the module folder instead of CSS injector:
+ *			~ the css is located in /writing365/css/scorecard.css
+ *    ~ the default value of the journal entry is "<onid_name>'s journal entry"
+ *    ~ added <noscript> at the top of the form telling user to turn on javascript
+ *    ~ changed scorecard to not be collapsed by default
+ *    ~ added some extra space between the scorecard and the text area
+ *    ~ added hidden fields for javascript variables:
+ *		  ~ wordcounter, words_per_minute counter, time_start, time_writing
+ *		  o time_start isn't currently used for anything
+ *	  ~ added field in the database for timewriting
+ *    ~ wordsperminute changed to words_per_minute due to javascript file change
+ *		  x (may want to change database schema to match this in the future)
+ *		  ~ this is now hidden from users but still put in the database
+ * - writing365_menu:
+ *    ~ $items['writing365'] access agruments is now 'administer write365'
+ * - (Added) writing365_scorecard:
+ *    ~ Added a loop that pulls students data from the database and stores it in an
+ *      array. That array is passed to javascript and then the javascript adds
+ *      the functionality to the form.
+ * - (Added) get_user_id:
+ *    ~ returns the uid of the currently logged in user that initiates the function.
+ *      in the future we can include this in more places of the module, for now it
+ *      exists. Needs to be refined and used correctly (when not using $account).
+ *
+ * js folder:
+ * - important javascript functions are now broken up into seperate .js files.
+ *    ~ files are scorecard.js, wordcounter.js, and words_per_minute.js.
+ */
+
+/**
+ * @file
+ * Enables journals used to encourage student writing. Extends Drupal Core's blog module
+ */
+
+/**
+ * Define the Writing 365 module's roles and weights
+ */
+function writing365_default_roles() {
+	$roles = array();
+	$roles ['Instructor'] = array('name' => 'instructor',
+			'weight' => '3' 
+	);
+	return $roles;
+}
+
+/**
+ * Implements hook_rdf_mapping().
+ */
+function writing365_rdf_mapping() {
+	return array(
+		array(
+			'type' => 'node',
+			'bundle' => 'writing365',
+			'mapping' => array(
+				'rdftype' => array(
+					'sioc:Post',
+					'sioct:JournalPost' 
+				) 
+			) 
+		) 
+	);
+}
+
+/**
+ * implements hook_user_login
+ */
+function writing365_user_login(&$edit, $account) {
+	/**global $user;
+	user_load ($user -> uid);
+	// check to see if the user has logged in and posted a journal entry today
+	$userID = $user -> uid;
+	$todaysDate = date ("Y-m-d");
+	$message = "User " . $userID . " logged in on " . $todaysDate . ".";
+	watchdog (WATCHDOG_NOTICE, $message);
+	$lastLoginUnix = db_query ('Select access from {users} where uid = :uid', array(':uid' => $userID 
+	)) -> fetchField ();
+	$lastLoginHumanReadable = date ("Y-m-d", $lastLoginUnix);
+	if ($todaysDate == $lastLoginHumanReadable) {
+		watchdog (WATCHDOG_NOTICE, 'user logged in previously today');
+		// @todo this is the WRONG query. Needs a timestamp parameter
+		$nid = db_query ('Select nid from {node} where type = :type and uid = :uid', array(':type' => 'writing365',
+				':uid' => $userID 
+		)) -> fetchField ();
+		watchdog (WATCHDOG_NOTICE, 'alert');
+		if ($nid) {
+			// do something
+			drupal_goto ('node/{nid}/writing365');
+		} else {
+			watchdog (WATCHDOG_NOTICE, "user hasn't created a journal entry today.");
+			// do nothing
+		}
+	}
+	**/
+	//drupal_goto('/writing365');
+}
+
+/**
+ * Development utility to check roles.
+ */
+function writing365_role_check($account) {
+	if (!user_access ('administer write365')) {
+		return;
+	}
+	// get user roles.
+	$list = $account -> roles;
+	if (!empty ($list)) {
+		// Prepare the information for themeing
+		$variables = array('items' => $list);
+		$content = theme ('item_list', $variables);
+		// Attach the content to the user page according to the API.
+		$account -> content ['summary']['output'] = array(
+			'#type' => 'user_profile_item',
+			'#title' => t('User roles'),
+			'#markup' => $content,
+			'#attributes' => array(
+				'class' => array('content-creation') 
+			)
+		);
+	}
+}
+
+/**
+ * Development utility to check the content types that a user can create
+ */
+function writing365_content_type_check($account) {
+	if (!user_access ('administer write365')) {
+		return;
+	}
+	// Get the defined node types
+	$node_types = node_permissions_get_configured_types ();
+	if (empty($node_types)) {
+		return;
+	}
+	// Make an array for the list output.
+	$list = array();
+	foreach ($node_types as $type) {
+		if (user_access ('administer write365')) {
+			// Get the human-readable name for the content type.
+			$list [] = check_plain (node_type_get_name ($type));
+		}
+	}
+	if (!empty ($list)) {
+		// prepare the information for theming.
+		$variables = array(
+			'items' => $list 
+		);
+		$content = theme ('item_list', $variables);
+		// Attach the content to the user page according to the API.
+		if (!isset ($account -> content ['example'])) {
+			$account -> content ['example'] = array();
+		}
+		$account -> content ['example'] += array(
+			'#type' => 'user_profile_category',
+			'#attributes' => array(
+					'class' => array(
+						'user-member' 
+					) 
+			),
+			'#weight' => 5,
+			'#title' => t ('Content ')
+		);
+		$account -> content ['example']['output'] = array(
+			'#type' => 'user_profile_item',
+			'#title' => t ('Content creation permissions'),
+			'#markup' => $content,
+			'#attributes' => array(
+				'class' => array(
+					'content-creation' 
+				) 
+			) 
+		);
+	}
+}
+
+/**
+ * Implements hook_user_view().
+ */
+function writing365_user_view($account) {
+	// role check debug function
+	writing365_role_check ($account);
+	// content-type creation function
+	writing365_content_type_check ($account);
+	
+	if (user_access ('create write365 content', $account)) {
+		if (_writing365_post_exists ($account)) {
+			$account -> content ['summary']['writing365'] = array(
+				'#type' => 'user_profile_item',
+				'#title' => t('Write 365 Journal'),
+				// l() escapes the attributes, so we should not escape !username here.
+				'#markup' => l(t('View recent journal entries'), "writing365/$account -> uid", array(
+					'attributes' => array(
+						'title' => t ("Read !username's latest journal entries.", array('!username' => format_username ($account))) 
+						) 
+					)
+				),
+				'#attributes' => array(
+					'class' => array(
+						'journal' 
+					) 
+				) 
+			);
+		} else {
+			return;
+		}
+	} else {
+		return;
+	}
+}
+
+/**
+ * Implements hook_help().
+ */
+function writing365_help($path, $arg) {
+	switch ($path) {
+		case 'admin/help#writing365' :
+			$output = '<h3>' . t ('About') . '</h3>';
+			$output .= '<p>' . t ("The Writing 365 module extends the Drupal Core blog module and allows registered users to maintain a daily online journal. Writing 365 journals are made up of individual <em>journal entries</em>. By default, the journal entries are displayed by creation time in descending order, with comments enabled, and are promoted to the site's front page. For more information, see the online handbook entry for <a href='@blog'>Blog module</a>.", array('@blog' => 'http://drupal.org/documentation/modules/blog/' 
+			)) . '</p>';
+			$output .= '<h3>' . t ('Uses') . '</h3>';
+			$output .= '<dl>';
+			$output .= '<dt>' . t ('Single-user blogs') . '</dt>';
+			$output .= '<dd>' . t ("Each student's journal entries are automatically displayed with a link to the user's main journal page. You can create as many single-user journals as you have site users with permission to create Writing 360 journal content.") . '</dd>';
+			$output .= '<dt>' . t ('Multi-user blogs') . '</dt>';
+			$output .= '<dd>' . t ("For instructors, journal entries from each student blog are also aggregated into one central interface, which displays the journal entries of all students in a single listing.") . '</dd>';
+			$output .= '<dt>' . t ('Navigation') . '</dt>';
+			$output .= '<dd>' . t ("There is an optional <em>Blogs</em> menu item added to the Navigation menu, which displays all blogs available on your site, and a <em>My blog</em> item displaying the current user's blog entries.") . '</dd>';
+			$output .= '<dt>' . t ('Blocks') . '</dt>';
+			$output .= '<dd>' . t ('The Blog module also creates a default <em>Recent blog posts</em> block that may be enabled at the <a href="@blocks">blocks administration page</a>.', array('@blocks' => url ('admin/structure/block') 
+			)) . '</dd>';
+			$output .= '</dl>';
+			return $output;
+	}
+}
+
+/**
+ * Implements hook_node_info().
+ */
+
+function writing365_node_info() {
+	return array(
+		'writing365' => array(
+			'name' => t ('Write 365 Journal Entry'),
+			'base' => 'writing365',
+			'description' => t ('Use for Write 365 journals. Every student gets a personal journal.'),
+			'help' => t ('The writing you produce here is visible only to you. Write at least 365 words in one or more sessions today, and you will get credit for it.'),
+			'has_title' => TRUE,
+			'locked' => TRUE 
+		) 
+	);
+}
+
+/**
+ * Implements hook_node_delete()
+ */
+function writing365_node_delete($node) {
+	$type = node_type_get_name ($node);
+	if ($type == 'Write 365 Journal Entry') {
+		db_delete ('W365_JournalNodeData') -> condition ('nid', $node -> nid) -> execute ();
+	}
+}
+
+/**
+ * Implements hook_node_insert()
+ */
+function writing365_node_insert($node) {
+	ddl($node);
+	$type = node_type_get_name ($node);
+	if ($type == 'Write 365 Journal Entry') {
+		$nid = '';
+		$word_count = 0;
+		$words_per_minute = 0;
+		$flag = 0;
+		$total_time = 0;
+		if (isset ($node -> body)) {
+			$word_count = $node -> hidden_wordcount;
+			$words_per_minute = $node -> hidden_words_per_minute;
+			$total_time = $node -> hidden_time_writing;
+			$nid = $node -> nid;
+			//handle case where js not enabled
+			if (($word_count == 'nojs') || ($words_per_minute == 'nojs')) {
+				$flag = 1; //flag is set to 1 when javascript is disabled
+				$word_count = str_word_count($node -> body['und'][0]['value']);
+				$total_time = time() - $node -> hidden_time_start; //time now - time when they opened form
+				$words_per_minute = ($word_count / $total_time) * 60;
+			}		
+			db_insert ('W365_JournalNodeData') -> fields(array(
+				'nid' => $node -> nid,
+				'wordcount' => $word_count,
+				'wordsperminute' => $words_per_minute,
+				'timewriting' => round($total_time), //time writing in seconds. This field name may not match live db
+				'jsdisabled' => $flag,
+			)) -> execute ();
+			if ($flag == 0) {		
+				drupal_set_message (t('New journal entry was created with a word count of @wordcount.', array('@wordcount' => $word_count)));
+			} else {
+				//warn user to enable javascript
+				drupal_set_message (t('In order for the word count to be properly stored, you MUST have Javascript enabled'), 'error');
+				//watchdog('writing365', 'Journal insert without javascript',WATCHDOG_CRITICAL);
+			}
+		} else {
+			drupal_set_message (t('Save of your journal entry failed.'));
+			watchdog('writing365', 'Journal insert failed!',WATCHDOG_CRITICAL);
+		}
+	} else {
+		//does not a write 365 journal entry
+	}
+}
+
+/**
+ * Implements hook_node_update()
+ */
+function writing365_node_update($node) {
+	$type = node_type_get_name ($node);
+	if ($type == 'Write 365 Journal Entry') {
+		$nid = '';
+		$word_count = 0;
+		$words_per_minute = 0;
+		$flag = 0;
+		$total_time = 0;
+		if (isset ($node -> body)) {
+			$word_count = $node -> hidden_wordcount;
+			$words_per_minute = $node -> hidden_words_per_minute;
+			$total_time = $node -> hidden_time_writing;
+			$nid = $node -> nid;
+			if (($word_count == 'nojs') || ($words_per_minute == 'nojs')) {
+				//set flag
+				$flag = 1;
+				$word_count = str_word_count($node -> body['und'][0]['value']);
+				$words_per_minute = 0;
+			}
+			$exists = db_query ('SELECT nid FROM {W365_JournalNodeData} WHERE nid = :nid', array(':nid' => $node -> nid 
+			)) -> fetchField ();
+			
+			// If there is already a record, update it with the updated word count.
+			if ($exists) {
+				$num_updated = db_update ('W365_JournalNodeData')
+				 ->  fields(array(
+					 	'nid' => $nid,
+						'wordcount' => (int) $word_count, //do we need (int) here?
+						'wordsperminute' => (int)($words_per_minute),
+						'timewriting' => round($total_time), //check this field name with live db
+						//flag not writing here intentionally, will need to address problem with user switching js on/off and updating node
+						))
+				->  condition ('nid', $node -> nid)
+				->  execute ();
+				if ($flag == 0) {		
+					drupal_set_message (t('Updated journal entry. Word count set to @wordcount.', array('@wordcount' => $word_count)));
+				} else {
+					//warn user to enable javascript
+					drupal_set_message (t('In order for the word count to be properly stored, you MUST have Javascript enabled'), 'error');
+					//not sure if this is working -> //watchdog('writing365', 'Journal insert without javascript',WATCHDOG_CRITICAL);
+				}
+			} else {
+				drupal_set_message (t('Updating your journal entry failed.'));
+				watchdog('writing365', 'Journal update failed!',WATCHDOG_CRITICAL);
+			}
+		}
+	}
+}
+
+/**
+ * Implements hook_view().
+ */
+function writing365_view($node, $view_mode) {
+	if ($view_mode == 'full' && node_is_page ($node)) {
+		// Breadcrumb navigation. l() escapes title, so we should not escape !name.
+		drupal_set_breadcrumb(array(l(t('Home'), NULL),
+				l(t('Writing 365'), 'writing365'), l(t("!name's journal", array('!name' => format_username ($node))), 'writing365/' . $node -> uid) 
+		));
+	}
+	return $node;
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function writing365_node_view($node, $view_mode) {
+	if ($view_mode != 'rss') {
+		if ($node -> type == 'writing365' && (arg(0) != 'writing365' || arg(1) != $node -> uid)) {
+			// This goes to l(), which escapes !username in both title and attributes.
+			$links['journal_usernames_journal'] = array(
+				'title' => t ("!username's journal", array('!username' => format_username ($node))),
+				'href' => "writing365/$node->uid",
+				'attributes' => array(
+					'title' => t("Read !username's latest journal entries.", array('!username' => format_username ($node)))
+				)
+			);
+			$node -> content ['links']['writing365'] = array(
+				'#theme' => 'links__node__writing365',
+				'#links' => $links,
+				'#attributes' => array(
+					'class' => array(
+						'links',
+						'inline' 
+					) 
+				) 
+			);
+		}
+	}
+}
+
+/**
+ * Access callback for user blog pages.
+ *
+ * This is not a hook, so we need to check how it's implemented.
+ *
+ * @todo check
+ */
+function writing365_page_user_access($account) {
+	// The visitor must be able to access the site's content.
+	// For a blog to 'exist' the user must either be able to
+	// create new blog entries, or it must have existing posts.
+	return $account -> uid && user_access ('create write365 content') && (user_access('create write365 content', $account) || _writing365_post_exists ($account));
+}
+
+/**
+ * Implements hook_permission()
+ */
+function writing365_permission() {
+	return array(
+		'administer write365' => array(
+			'title' => t('Administer Write 365'),
+			'description' => t('Administer module, view all Write 365 content, and view site-wide administrative reports') 
+		),
+		'view instructor reports' => array(
+			'title' => t ('View Write 365 Reports'),
+			'description' => t('View Instructor Reports (cannot view student writing)') 
+		),
+		'create write365 content' => array(
+			'title' => t ('Create Write 365 Journal Entry'),
+			'description' => t('Basic Write 365 journal access') 
+		),
+	);
+}
+
+/**
+ * Helper function to return the home/landing page for write 365 module
+ */
+function _writing365_home() {
+	
+}
+
+/**
+ * Implements hook_form().
+ */
+function writing365_form($node, $form_state) {
+	//drupal_set_message('Write 365 will be taken offline briefly Saturday morning, October 18, between 6 and 6:30 am for a server reboot.');
+	//drupal_set_message('A 90 minute maintenance period is scheduled for Sunday morning, October 19, from 8:00 - 9:30 am, Pacific.');
+	//drupal_set_message('Write 365 will be inaccessible during this maintenance period. Please plan accordingly.');
+	return node_content_form ($node, $form_state);
+}
+/**
+ * 
+ * Implements hook_form_alter()
+ * Removes the summary fleld from the form
+ */
+function writing365_form_alter(&$form, &$form_state, $form_id) {
+	if ($form_id == 'writing365_node_form') {
+		$form['body'][LANGUAGE_NONE][0]['summary']['#access'] = FALSE;
+	}
+}
+
+/**
+ * Implements hook_form_BASE_FORM_alter()
+ * Adds the score card and wordcounter
+ */
+ 
+function writing365_form_node_form_alter(&$form, &$form_state) {
+	$content_type = $form ['#node'] -> type;
+	if ($content_type == 'writing365') {
+		drupal_add_js (drupal_get_path ('module', 'writing365') . '/js/wordcounter.js', 'file');
+		drupal_add_js (drupal_get_path ('module', 'writing365') . '/js/words_per_minute.js', 'file');
+		drupal_add_css (drupal_get_path ('module', 'writing365') . '/css/scorecard.css', 'file');
+		
+		//default journal entry title is needed to not break the javascript when hitting submit...
+		$form['title']['#default_value'] = $form['author']['name']['#default_value'] . '\'s journal entry';
+		//notify user to use javascript if they have javascript disabled
+		$form['js'] = array(
+			'#weight' => '-15',
+			'#markup' => '<noscript><h3><font color ="red">You must have javascript enabled to use this site</font></h3></noscript>',
+		);
+		$form ['fieldset'] = array(
+			'#type' => 'fieldset',
+			'#title' => t ('Score Card'),
+			'#weight' => '-13',
+			'#collapsible' => TRUE,
+			'#collapsed' => FALSE,
+		);
+		$form ['fieldset']['scorecard'] = array(
+			'#markup' => writing365_scorecard(),
+			'#title' => 'Score Card',
+			'#weight' => '-12',
+		);
+		$form ['fieldset']['space'] = array(
+			'#markup' => '<p>&nbsp;&nbsp;</p>',
+			'#weight' => '-11',
+		);
+		$form ['extraspace'] = array(
+			'#markup' => '<p>&nbsp;&nbsp;</p>',
+			'#weight' => '-11',
+		);
+		/*$form ['test'] = array(
+			'#markup' => writing365_scorecard(),
+			'#weight' => '-13',
+		);*/
+		//this is where jQuery will store the wordcount and words per minute to pass to $node later
+		//the default values will not change if javascript is disabled, which means they can copy/paste
+		$form['hidden_wordcount'] = array(
+			'#type' => 'hidden',
+			'#default_value' => 'nojs',
+		);
+		$form['hidden_words_per_minute'] = array(
+			'#type' => 'hidden',
+			'#default_value' => 'nojs',
+		);
+		//this is the time when the user opens the form. Used in node_insert if js is disabled
+		$form['hidden_time_start'] = array(
+			'#type' => 'hidden',
+			'#default_value' => time(),
+		);
+		
+		//if the node exists, add to total time writing
+		$nid = $form['nid']['#value'];
+		if ($nid) {
+			$time_writing = db_select('W365_JournalNodeData', 'j')
+				-> fields('j', array('timewriting'))
+				-> condition('nid', $nid)
+				-> execute()
+				-> fetchAll();
+			//$time_writing = $time_writing['timewriting'];
+			$time_writing = $time_writing[0] -> timewriting;
+		} else {
+			$time_writing = 0;	
+		}
+		
+		//pass this variable to js
+		drupal_add_js(array('writing365' => array('initial_time_writing' => $time_writing)), array('type' => 'setting'));
+		
+		$form['hidden_time_writing'] = array(
+			'#type' => 'hidden',
+			'#default_value' => $time_writing,
+		);
+		
+		//markup on the page
+		$form['body'][LANGUAGE_NONE][0]['#prefix'] = '
+			<div class="wordcountwrapper" id="wordcountwrapper" style="display: inline">
+			<h3>You have typed <div id="wordcount" style="display: inline">0</div> words</h3></div>';
+
+
+		$form['body'][LANGUAGE_NONE][0]['#prefix'] .= '<div id="wpmwrapper">
+			Time writing is <div id="test" style="display: inline"></div> </div>';
+
+		/*$form['body'][LANGUAGE_NONE][0]['#prefix'] .= '<div id="wpmwrapper">
+			You are typing at a speed of <div id="wpm" style="display: inline">0</div> words per minute.</div>';*/
+		$form['body'][LANGUAGE_NONE][0]['#prefix'] .= '<div id="body-add-more-wrapper">';
+	}
+}
+
+/**
+ * Implements hook_menu().
+ */
+function writing365_menu() {
+	$items['writing365/home'] = array(
+		'title' => 'Welcome to Write 365',
+		'page callback' => '_writing365_home',
+		'access arguments' => array(
+			'access content',
+		),
+	);
+	$items['writing365'] = array(
+		'title' => 'Journal',
+		'page callback' => 'writing365_page_last',
+		'access arguments' => array('administer write365'),
+		'type' => MENU_SUGGESTED_ITEM,
+		'file' => 'writing365.pages.inc' 
+	);
+	$items['writing365/%user_uid_optional'] = array(
+			'title' => 'My journal',
+			'page callback' => 'writing365_page_user',
+			'page arguments' => array(1),
+			'access callback' => 'writing365_page_user_access',
+			'access arguments' => array(1),
+			'file' => 'writing365.pages.inc' 
+	);
+	$items['writing365/%user/feed'] = array(
+			'title' => 'Writing 365',
+			'page callback' => 'writing365_feed_user',
+			'page arguments' => array(1),
+			'access callback' => 'writing365_page_user_access',
+			'access arguments' => array(1),
+			'type' => MENU_CALLBACK,
+			'file' => 'writing365.pages.inc' 
+	);
+	$items['writing365/feed'] = array(
+		'title' => 'Journal',
+		'page callback' => 'writing365_feed_last',
+		'access arguments' => array('access content'),
+		'type' => MENU_CALLBACK,
+		'file' => 'writing365.pages.inc' 
+	);
+	return $items;
+}
+
+/**
+ * Implements hook_menu_local_tasks_alter().
+ */
+function writing365_menu_local_tasks_alter(&$data, $router_item, $root_path) {
+	//global $user;
+	
+	// Add action link to 'node/add/writing365' on 'journal' page.
+	if ($root_path == 'writing365') {
+		$item = menu_get_item ('node/add/writing365');
+		if ($item['access']) {
+			$item['title'] = t ('Create new journal entry');
+			$data['actions']['output'][] = array(
+				'#theme' => 'menu_local_action',
+				'#link' => $item 
+			);
+		}
+	} 	// Provide a helper action link to the author on the 'writing365/%' page.
+	elseif ($root_path == 'writing365/%' && $router_item ['page_arguments'][0] -> uid == get_user_id()) {
+		$data ['actions']['output']['writing365'] = array(
+			'#theme' => 'menu_local_action',
+		);
+		if (user_access ('create write365 content')) {
+			$data['actions']['output']['writing365']['#link']['title'] = t('Create new journal entry');
+			$data['actions']['output']['writing365']['#link']['href'] = 'node/add/writing365';
+		} else {
+			$data['actions']['output']['writing365']['#link']['title'] = t('You are not allowed to create a new journal entry.');
+		}
+	}
+}
+
+/**
+ * Helper function to determine if a user has journal posts already.
+ */
+function _writing365_post_exists($account) {
+	return (bool) db_select ('node', 'n')
+		-> fields ('n', array('nid'))
+		-> condition ('type', 'writing365')
+		-> condition ('uid', $account -> uid)
+		-> condition ('status', 1)
+		-> range (0, 1)
+		-> addTag ('node_access')
+		-> execute ()
+		-> fetchField ();
+}
+
+/**
+ * Implements hook_block_info().
+ */
+function writing365_block_info() {
+	$block ['recent'] = array(
+		'info' => t('Recent journal entries'),
+		'properties' => array(
+			'administrative' => TRUE,
+		),
+	);
+	return $block;
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function writing365_block_configure($delta = '') {
+	if ($delta == 'recent') {
+		$form ['writing365_block_count'] = array(
+			'#type' => 'select',
+			'#title' => t('Number of recent journal entries to display'),
+			'#default_value' => variable_get('writing365_block_count', 10),
+			'#options' => drupal_map_assoc(array(
+				2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,25,30
+			)) 
+		);
+		return $form;
+	}
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function writing365_block_save($delta = '', $edit = array()) {
+	if ($delta == 'recent') {
+		variable_set ('writing365_block_count', $edit['writing365_block_count']);
+	}
+}
+
+/**
+ * Implements hook_block_view().
+ *
+ * Displays the most recent 10 blog titles.
+ */
+function writing365_block_view($delta = '') {
+	$uid = get_user_id();
+	//ddl(user_role_permissions($user -> roles));
+	$block = array();
+	switch ($delta) {
+  		case 'recent':
+			if (user_access ('access content')) {
+				$result = db_select ('node', 'n')
+					 -> fields ('n', array(
+					 	'nid',
+						'title',
+						'created'))
+					 -> condition ('type', 'writing365')
+					 -> condition ('status', 1)
+					 -> condition ('uid', $uid) //added this 1-7-2015
+					 -> orderBy ('created', 'DESC')
+					 -> range (0, variable_get ('writing365_block_count', 10))
+					 -> addTag ('node_access')
+					 -> execute();
+				
+				if ($node_title_list = node_title_list($result)) {
+					$block ['subject'] = t ('Recent journal entries');
+					$block ['content']['writing365_list'] = $node_title_list;
+					$block ['content']['writing365_more'] = array(
+						'#theme' => 'more_link',
+						'#url' => 'writing365',
+						'#title' => t ('Read the latest journal entries.')
+					);
+				}
+				break;
+			}
+	}
+	return $block;
+}
+
+function writing365_scorecard() {
+	//placeholder for javascript	
+	$output = '<div class="scorecardwrapper">';
+	$output .= '<div class="scorecard">';
+	$output .= '<div class="arrows" id="leftarrow"><img src="/sites/all/modules/writing365/images/leftarrow.jpg" title="See the beginning of your score card!"></div>';
+	$output .= '<div class="box" id="dow1"></div>';
+	$output .= '<div class="box" id="dow2"></div>';
+	$output .= '<div class="box" id="dow3"></div>';
+	$output .= '<div class="box" id="dow4"></div>';
+	$output .= '<div class="box" id="dow5"></div>';
+	$output .= '<div class="box" id="dow6"></div>';
+	$output .= '<div class="box" id="dow7"></div>';
+	$output .= '<div class="box" id="dow8"></div>';
+	$output .= '<div class="box" id="dow9"></div>';
+	$output .= '<div class="box" id="dow10"></div>';
+	$output .= '<div class="arrows" id="rightarrow"><img src="/sites/all/modules/writing365/images/rightarrow.jpg" title="Go forward 10 tiles"></div> </div>';
+
+	$uid = get_user_id();
+	
+	//initialize everything
+	date_default_timezone_set('America/Los_Angeles');
+	$date = date('m/d/Y h:i:s a', time());
+	$timestamp = time($date);
+	$partialData = array();
+	$allData = array();
+	$unixDay = 24*3600; //86400
+	$num_loops = 5; //this is the number of times they scroll through the scorecard
+	
+	for($i = $num_loops; $i >= 0; $i--) {
+		//$firstDayOfArray is a unix timestamp of hour zero of today in pacific time zone.
+		//It is the starting place of each small array. The first array, size of 10 will
+		//loop over days 29-20, the second will loop over 19-10, the third 9-0 where 0 is
+		//today. This expression should not be changed. The value 10 MUST match the number
+		//of placeholder boxes in $output if ever changed in the future.
+		$firstDayOfArray = (strtotime("midnight", $timestamp)) + $unixDay * (1 - (10 * $i));
+		
+		for($j = 0; $j < 10; $j++) {
+			//$someDate is the current date that is being evaluated
+			$someDateUnix = $firstDayOfArray + $unixDay * ($j - 10);
+			$someDate = date('m-d-Y', $someDateUnix);
+			//query selects one days worth of data
+			//---------------------------------------------
+			$query = db_select('W365_JournalNodeData', 'j');
+			$query -> join('node', 'n', 'j.nid = n.nid');
+				//need to change to generic user id
+			$query -> condition('uid', $uid);
+				//lower bound
+			$query -> condition('created', ($someDateUnix), '>=');
+				//upper bound
+			$query -> condition('created', ($someDateUnix + $unixDay), '<');
+			$query -> orderBy('n.nid', 'ASC');
+			//---------------------------------------------
+			//execute the query and save important variables
+			$numResults = $query -> countQuery() -> execute() -> fetchField();
+			$result = $query 
+				 ->  fields('j', array('nid', 'wordcount'))
+				 ->  fields('n', array('created'))
+				 ->  execute()
+				 ->  fetchAll();
+			if($numResults) {
+				//student could have multiple entries in one day, add up all words in all entries
+				$totalWords = 0;
+				foreach ($result as $field) {
+					$totalWords = $totalWords + $field -> wordcount;
+					//the last node created for that will be hyperlinked on the scorecard
+					$nid = $field -> nid;
+				}
+				//store total results in a small array that will eventually be appended to a larger one
+				$partialData[] = array('Date' => $someDate, 'Words' => $totalWords, 'nid' => $nid);
+			}
+			else { //they didn't write anything on that day
+				$partialData[] = array('Date' => $someDate, 'Words' =>'0');
+			}
+			//reset totalWords
+			$totalWords = 0;
+		}
+		//append 10 days worth of data into the big array
+		$allData[] = $partialData;
+		//reset vars
+		unset($partialData);
+		$j = 0;
+	}
+
+	global $base_url; //something.oregonstate.edu/
+	//passing variables to javascript in the file scorecard.js
+	drupal_add_js(array('writing365' => array('jsonArray' => $allData)), array('type' => 'setting')); //array of data
+	drupal_add_js(array('writing365' => array('num_loops' => $num_loops)), array('type' => 'setting')); //# of scrolls in scorecard
+	drupal_add_js(array('writing365' => array('basepath' => $base_url)), array('type' => 'setting')); //basepath for links to edit nodes
+	drupal_add_js(drupal_get_path('module', 'writing365') . '/js/scorecard.js');
+
+	//return plain markup that the javascript will overwrite later
+	return $output;
+}
+
+function mytest() {
+	global $base_url;
+	$path = "$base_url/sites/all/modules/writing365/images/spare.jpg";
+	$picture = l('<img src="' . $path . '"/>', 'sites/all/modules/writing365/images/strike.jpg', array(
+			'html' => TRUE)
+		);
+	//echo $path;
+	/*$form ['fieldset']['test'] = array(
+		'#markup' => l('<img src="' . $path . '"/>', 'sites/all/modules/writing365/images/strike.jpg', array(
+			'html' => TRUE)
+		),
+		'#weight' => '-11',
+	);*/
+	return $picture;
+}
+
+//grabs the uid from the currently logged in user running this script
+function get_user_id() {
+	//read the difference between $user and $account at: https://www.drupal.org/node/892008
+	global $user;
+	return $user -> uid;	
+}
