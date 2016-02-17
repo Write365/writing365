@@ -1,0 +1,135 @@
+/* File: tabestyle.css
+ * Version: 7103
+ * Changes:
+ * 	  - Commented out the height of the scorecard since it was not
+ *		letting users change the title of their journal entry
+ *
+ * Created by Lily Bartlett on 2014-09-02.
+ * Updated: 2014-09-12 */
+ 
+div#scorecardwrapper {
+width:100%;
+text-align:center;
+}
+/*Title text orientation*/
+div#scorecardtitle {
+	display:table;
+	margin:0 auto;
+}
+/*wrapper sets scorecard height and width*/
+div.scorecard {
+	/*height: 100px;*/
+	position: absolute;
+	width: 100%;
+}
+
+/*places arrows around scorecard*/
+div.arrows {
+	padding:5px;
+	top: 1px;
+	margin: 0 0 0 0;
+}
+/*anchors left arrows*/
+div#leftarrow {
+float:left;
+left:10px;
+	position: relative;
+	border: none;
+}
+/*anchors right arrows*/
+div#rightarrow {
+	float: left;
+	left: 70px;
+	position: relative;
+	border: none;
+}
+/*sets size of each scorecard box*/
+div.box {
+	width: 20px;
+	height: 30px;
+	position: relative;
+}
+/*each div id following is an individual scorecard box
+ each is positioned relative to the box before it and aligned with the arrows*/
+#dow1 {
+	float: left;
+	/*	width:10%;*/
+	position: absolute;
+	/*top:20px;*/
+	left: 40px;
+	border: 1px #666666 solid;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+#dow2 {
+	float: left;
+	left: 36px;
+	border: 1px #666666 solid;
+	margin: auto;
+	padding: 0 0 0 0;
+}
+#dow3 {
+	float: left;
+	left: 40px;
+	top: 0;
+	border: 1px #666666 solid;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+#dow4 {
+	float: left;
+	left: 44px;
+	top: 0;
+	border: 1px #666666 solid;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+#dow5 {
+	float: left;
+	left: 48px;
+	top: 0;
+	border: 1px #666666 solid;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+#dow6 {
+	float: left;
+	left: 52px;
+	top: 0;
+	border: 1px #666666 solid;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+#dow7 {
+	float: left;
+	left: 56px;
+	top: 0;
+	border: 1px #666666 solid;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+#dow8 {
+	float: left;
+	left: 60px;
+	top: 0;
+	border: 1px #666666 solid;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+#dow9 {
+	float: left;
+	left: 64px;
+	top: 0;
+	border: 1px #666666 solid;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+#dow10 {
+	float: left;
+	left: 68px;
+	top: 0;
+	border: 1px #666666 solid;
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+

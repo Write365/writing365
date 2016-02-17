@@ -1,0 +1,29 @@
+; File: writing365.info
+; Version 7104
+; Changes:
+; changed name from writing365 to Write 365
+; Updated: 8/7/2015
+; Version 7103
+;    - No changes performed on this file -
+;
+; Version 7102
+; Updated 1/9/2015
+; Changes:
+; writing365.info:
+; - removed 'script[]' tags to prevent loading javascript on every page it isn't needed
+
+name = Write 365
+description = Extends Drupal Core's blog module to enable student writing journals. 
+package = Writing Center Tools
+version = 7.x-1.2-dev
+core = 7.x
+
+dependencies[] = nodeaccess
+
+files[] = tablestyle.css
+files[] = writing365.install
+files[] = writing365.module
+files[] = writing365.pages.inc
+files[] = writing365.test
+
+project = "writingcenter"

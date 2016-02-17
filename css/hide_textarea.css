@@ -1,0 +1,19 @@
+/* File: hide_textarea.css
+ * Version: 7103
+ * Created: 2/16/2015
+ * Description:
+ * 	  This hides the textarea from the users by
+ * 	  default. If the user has javascript enbabled,
+ * 	  they will be able to see the text area. */
+
+#edit-fieldset {
+	display: none;
+}
+
+.form-item.form-type-textfield.form-item-title {
+	display: none;	
+}
+
+#edit-body {
+	display: none;	
+}

@@ -1,0 +1,103 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the writing365 module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function writing365_install() {
+  // Ensure the writing365 node type is available.
+  node_types_rebuild();
+  $types = node_type_get_types();
+  node_add_body_field($types['writing365'], 'Journal Entry');
+  
+  //close comments
+  variable_set('comment_writing365', 0);
+
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function writing365_uninstall() {
+	// clean uninstall returns the database back to its state before the module was installed. No trace will be left of the Writing 365 module
+	$query = 'select nid from {node} n where n.type = :type';
+	$result = db_query($query, array(':type' => 'writing365'));
+	$nids = array();
+	foreach ($result as $row) {
+		$nids[] = $row->nid;
+	}
+	
+	node_delete_multiple($nids);
+	
+	$instance = array('field_name' => 'comment_body', 'bundle' => 'comment_node_writing365', 'entity_type' => 'comment');
+	field_delete_instance($instance);
+	
+	$instance = array('field_name' => 'body', 'bundle' => 'writing365', 'entity_type' => 'node');
+	field_delete_instance($instance);
+	
+	
+  variable_del('writing365_block_count');
+  
+  node_type_delete('writing365');
+ 
+  
+  // delete the entry that turns off comments for the data type
+ // variable_del('comment_writing365');
+  
+// drop all W365 tables
+	db_drop_table('W365_JournalNodeData'); 
+}
+/**
+ * Implements hook_schema
+ */
+  
+function writing365_schema() {
+	$schema = array();
+	$schema['W365_JournalNodeData'] = array(
+		'description' => 'This table contains data specific to a Writing 365 journal entry',
+		'fields' => array(
+			'nid' => array (
+				'description' => 'The node id of the journal entry',
+				'type' => 'int',
+				'length' => 'normal',
+				'not null' => TRUE,
+				'default' => 0,	
+			),
+			'wordcount' => array(
+				'description' => 'word count of the journal entry',
+				'type' => 'int',
+				'length' => 'normal',
+				'not null' => TRUE,
+				'default' => 0,
+			),
+			'timewriting' => array(
+				'description' => 'Total time spent (over multiple sessions) composing this entry',
+				'type' => 'float',
+				'length' => 'normal',
+				'not null' => TRUE,
+				'default' => 0,
+			),
+			'wordsperminute' => array(
+				'description' => 'The number of words per minute, as calculated by JavaScript.',
+                'type' => 'int',
+                'length' => 'normal',
+                'not null' => TRUE,
+                'default' => 0,
+			),
+            'jsdisabled' => array(
+                'description' => 'Boolean flag indicating whether or not the Write 365 user browser had JavaScript
+                disabled. 1 = disabled, 0 = enabled.',
+                'type' => 'int',
+                'length' => 'normal',
+                'not null' => TRUE,
+                'default' => 0,
+            ),
+		),
+			'primary key' => array('nid'),
+	);
+	return $schema;
+}
