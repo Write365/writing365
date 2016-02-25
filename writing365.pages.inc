@@ -88,67 +88,6 @@ function writing365_page_last()
     return $build;
 }
 
-function writing365_page_info_last()
-{
-    global $user;
-    $build = array();
-    drupal_set_title($title = t("@name's Write 365 Journal Summary", array('@name' => format_username($account))), PASS_THROUGH);
-
-    $build = "<p>WordSalad is a text analysis service designed to analyze the authenticity of journal entries. WordSalad computes a probability that a journal entry was written by a person rather then fabricated using other means such as text-to-speech or random key strokes. Note: Only journal entries after January 7th, 2016 are included in this view.</p>";
-    $build .= "<p><i class=\" fa fa-exclamation-triangle fa-2x\" style=\"color:#f08080;\"></i>&nbsp;&nbsp;A WordSalad value indicating that the journal entry is <u>probably not</u> structured English.<br />";
-    $build .= "<i class=\" fa fa-check fa-2x\" style=\"color:#90ee90;\"></i>&nbsp;&nbsp;A WordSalad value indicating that the journal entry is <u>probably</u> structured English.</p>";
-
-
-    # configure the table header columns
-    $header = array(
-        array('data' => 'Title', 'field' => 'title', 'sort' => 'ASC'),
-        array('data' => 'Created', 'field' => 'created', 'sort' => 'ASC'),
-        array('data' => 'WordSalad', 'field' => 'is_wordsalad'),
-        array('data' => 'Wordcount', 'field' => 'wordcount'),
-
-    );
-
-    $result = db_select('node', 'n')->extend('PagerDefault');
-
-    $result->fields('n', array('nid', 'title', 'type', 'created'))
-        ->fields('w', array('is_wordsalad', 'percent', 'score'))
-        ->fields('wc', array('wordcount', 'timewriting', 'wordsperminute'))
-        ->condition('type', 'writing365')
-        ->condition('status', 1)
-        ->orderBy('created', 'DESC')
-        ->addTag('node_access');
-
-    // ->range(0, variable_get('writing365_block_count', 10))
-    $result->join('wordsalad_score', 'w', 'w.nid = n.nid');
-    $result->join('W365_JournalNodeData', 'wc', 'wc.nid = n.nid');
-
-    $results = $result->execute();
-
-
-    $rows = array();
-
-    foreach ($results as $row) {
-        if ($row->is_wordsalad) {
-            $wordsalad = '<i class=" fa fa-exclamation-triangle fa-2x" style="color:#f08080;"></i>';
-        } else {
-            $wordsalad = '<i class=" fa fa-check fa-2x" style="color:#90ee90;"></i>';
-        }
-        $rows[] = array(
-            "title" => "<a href='/node/" . $row->nid . "''/>" . $row->title . "</a>",
-            "created" => date('F j, Y, g:i a', $row->created),
-            "is_wordsalad" => $wordsalad,
-            "wordcount" => $row->wordcount,
-        );
-    }
-
-    $build .= theme('table', array('header' => $header, 'rows' => $rows));
-
-    # add the pager
-    $build .= theme('pager');
-
-    return $build;
-
-}
 
 /**
  * Menu callback; displays a Drupal page containing recent journal entries, wordcount and wordsalad of user.
