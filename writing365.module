@@ -574,7 +574,7 @@ function writing365_menu()
         'file' => 'writing365.pages.inc'
     );
     $items['writing365info/%user_uid_optional'] = array(
-        'title' => 'My Journal Info',
+        'title' => 'My Journal Summary',
         'page callback' => 'writing365_page_info',
         'page arguments' => array(1),
         'access callback' => 'writing365_page_user_access',

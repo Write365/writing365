@@ -88,12 +88,12 @@ function writing365_page_last()
     return $build;
 }
 
+
 function writing365_page_info_last()
 {
     global $user;
     $build = array();
     drupal_set_title($title = t("Write 365 Journal WordSalad Summary"), PASS_THROUGH);
-
     $build = "<p>WordSalad is a text analysis service designed to analyze the authenticity of journal entries. WordSalad computes a probability that a journal entry was written by a person rather then fabricated using other means such as text-to-speech or random key strokes. Note: Only journal entries after January 7th, 2016 are included in this view.</p>";
     $build .= "<p><i class=\" fa fa-exclamation-triangle fa-2x\" style=\"color:#f08080;\"></i>&nbsp;&nbsp;A WordSalad value indicating that the journal entry is <u>probably not</u> structured English.<br />";
     $build .= "<i class=\" fa fa-check fa-2x\" style=\"color:#90ee90;\"></i>&nbsp;&nbsp;A WordSalad value indicating that the journal entry is <u>probably</u> structured English.</p>";
