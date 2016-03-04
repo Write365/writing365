@@ -649,13 +649,36 @@ function writing365_block_save($delta = '', $edit = array())
  */
 function writing365_block_view($delta = '')
 {
-    
     $uid = get_user_id();
+    //ddl(user_role_permissions($user -> roles));
     $block = array();
     switch ($delta) {
         case 'recent':
-                break;
+            if (user_access ('access content')) {
+                $result = db_select ('node', 'n')
+                    -> fields ('n', array(
+                        'nid',
+                        'title',
+                        'created'))
+                    -> condition ('type', 'writing365')
+                    -> condition ('status', 1)
+                    -> condition ('uid', $uid) //added this 1-7-2015
+                    -> orderBy ('created', 'DESC')
+                    -> range (0, variable_get ('writing365_block_count', 10))
+                    -> addTag ('node_access')
+                    -> execute();
 
+                if ($node_title_list = node_title_list($result)) {
+                    $block ['subject'] = t ('Recent journal entries');
+                    $block ['content']['writing365_list'] = $node_title_list;
+                    $block ['content']['writing365_more'] = array(
+                        '#theme' => 'more_link',
+                        '#url' => 'writing365',
+                        '#title' => t ('Read the latest journal entries.'),
+                    );
+                }
+                break;
+            }
     }
     return $block;
 }
