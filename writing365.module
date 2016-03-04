@@ -566,21 +566,6 @@ function writing365_menu()
         'access arguments' => array(1),
         'file' => 'writing365.pages.inc'
     );
-    $items['writing365info'] = array(
-        'title' => 'WordSalad Summary',
-        'page callback' => 'writing365_page_info_last',
-        'access arguments' => array('administer write365'),
-        'type' => MENU_SUGGESTED_ITEM,
-        'file' => 'writing365.pages.inc'
-    );
-    $items['writing365info/%user_uid_optional'] = array(
-        'title' => 'My Journal Summary',
-        'page callback' => 'writing365_page_info',
-        'page arguments' => array(1),
-        'access callback' => 'writing365_page_user_access',
-        'access arguments' => array(1),
-        'file' => 'writing365.pages.inc'
-    );
     return $items;
 }
 
@@ -664,53 +649,32 @@ function writing365_block_save($delta = '', $edit = array())
  */
 function writing365_block_view($delta = '')
 {
-    // Load Font Awesome
-    drupal_add_css(drupal_get_path('module', 'writing365') . '/css/font-awesome.min.css', 'file');
     $uid = get_user_id();
+    //ddl(user_role_permissions($user -> roles));
     $block = array();
     switch ($delta) {
         case 'recent':
-            // Recent Journal Entry Block
-            if (user_access('access content')) {
+            if (user_access ('access content')) {
+                $result = db_select ('node', 'n')
+                    -> fields ('n', array(
+                        'nid',
+                        'title',
+                        'created'))
+                    -> condition ('type', 'writing365')
+                    -> condition ('status', 1)
+                    -> condition ('uid', $uid) //added this 1-7-2015
+                    -> orderBy ('created', 'DESC')
+                    -> range (0, variable_get ('writing365_block_count', 10))
+                    -> addTag ('node_access')
+                    -> execute();
 
-                // Select all journal entries and corresponding WordSalad scores
-                $result = db_select('node', 'n');
-                $result->join('wordsalad_score', 'w', 'w.nid = n.nid');
-                $result->fields('n', array('nid', 'title', 'created'))
-                    ->fields('w', array('is_wordsalad', 'percent', 'score'))
-                    ->condition('type', 'writing365')
-                    ->condition('status', 1)
-                    ->condition('uid', $uid)//added this 1-7-2015
-                    ->orderBy('created', 'DESC')
-                    ->range(0, variable_get('writing365_block_count', 10))
-                    ->addTag('node_access');
-
-                // Fetch quesry results
-                $wordsalad = $result->execute()->fetchAll();
-
-
-                // Create a list of likes based on journal entry
-                $node_title_list = node_title_list($wordsalad);
-
-                // Adding WorldSalad Flag
-                // Adds exclamation point in triangle if post is flagged
-                // Adds check mark if post is not flagged
-                for ($i = 0; $i < count($node_title_list['#items']); $i++) {
-                    if ($wordsalad[$i]->is_wordsalad) {
-                        $node_title_list['#items'][$i] = '<i class=" fa fa-exclamation-triangle fa-1x" style="color:#f08080;"></i> ' . $node_title_list['#items'][$i];
-                    } else {
-                        $node_title_list['#items'][$i] = '<i class=" fa fa-check fa-1x " style="color:#90ee90;"></i> ' . $node_title_list['#items'][$i];
-                    }
-                }
-
-                // Build the block
-                if ($node_title_list) {
-                    $block ['subject'] = t('Recent journal entries');
+                if ($node_title_list = node_title_list($result)) {
+                    $block ['subject'] = t ('Recent journal entries');
                     $block ['content']['writing365_list'] = $node_title_list;
                     $block ['content']['writing365_more'] = array(
                         '#theme' => 'more_link',
                         '#url' => 'writing365',
-                        '#title' => t('Read the latest journal entries.'),
+                        '#title' => t ('Read the latest journal entries.'),
                     );
                 }
                 break;
