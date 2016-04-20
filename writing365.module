@@ -355,6 +355,8 @@ function writing365_form_node_form_alter(&$form, &$form_state)
         } else {
             $title = $form['author']['name']['#default_value'] . '\'s journal entry';
         }
+
+
         $form ['title']['#default_value'] = $title;
 
         //scorecard stuff
@@ -419,7 +421,7 @@ function writing365_form_node_form_alter(&$form, &$form_state)
 			<div class="wordcountwrapper" id="wordcountwrapper" style="display: inline">
 			<h3>You have typed <div id="wordcount" style="display: inline">0</div> words (estimated)</h3></div>';
 
-        $form['body'][LANGUAGE_NONE][0]['#prefix'] .= '<div id="body-add-more-wrapper">';
+        $form['body'][LANGUAGE_NONE][0]['#prefix'] .= '<div id="body-add-more-wrapper"></div>';
     }
 }
 
