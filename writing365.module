@@ -312,6 +312,9 @@ function writing365_node_view($node, $view_mode)
     }
 }
 
+/**
+ * Implements hook_form_alter()
+ */
 function writing365_form_alter(&$form, &$form_state, $form_id)
 {
     if ($form_id == 'writing365_node_form') {
@@ -332,7 +335,6 @@ function writing365_form_alter(&$form, &$form_state, $form_id)
  * Implements hook_form_BASE_FORM_alter()
  * Adds the score card and wordcounter
  */
-
 function writing365_form_node_form_alter(&$form, &$form_state)
 {
     $content_type = $form ['#node']->type;
@@ -425,6 +427,11 @@ function writing365_form_node_form_alter(&$form, &$form_state)
     }
 }
 
+/**
+ * Impliments hook_scorecard()
+ * @param $form
+ * @return string
+ */
 function writing365_scorecard($form)
 {
     //if the node exists, look at the scorecard for the person who wrote it
