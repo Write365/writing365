@@ -1,0 +1,223 @@
+/*
+ - Project: TACAL
+ - File: demo.css
+ - Author: Nathan Healea
+ - Created: 3/31/16
+*/
+@import url(https://fonts.googleapis.com/css?family=Lato:400,700);
+
+.calendar-wrapper {
+    padding: 2em;
+    font-family: 'Lato', sans-serif;
+
+}
+
+.calendar-wrapper .btnPrev,
+.calendar-wrapper .btnNext {
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    font-weight: bolder;
+    text-align: center;
+    cursor: pointer;
+
+}
+
+.calendar-wrapper .btnPrev {
+    /*float: left;
+    margin-bottom: 20px;*/
+}
+
+.calendar-wrapper .btnNext {
+    /*  float: right;
+      margin-bottom: 20px;*/
+}
+
+/* ------- Calendar Table General -------- */
+
+.calendar-wrapper table {
+    clear: both;
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border-radius: 12px;
+    background-color: #ffffff;
+}
+
+.calendar-wrapper table tr td {
+    height: 48px;
+    width: calc(100% / 7);
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* linear view */
+.calendar-wrapper.linear table tr td {
+    width: calc(100% / 32);
+}
+
+/* ------- Calendar Table Head -------- */
+.calendar-wrapper table thead {
+
+}
+
+.calendar-wrapper table thead tr {
+    height: 100px;
+    text-transform: uppercase;
+    font-size: 1.5em;
+    background-color: #CB5C20;
+    color: #ffffff;
+
+}
+
+.calendar-wrapper table thead tr td:first-child {
+    border-radius: 12px 0px 0px 0px;
+
+}
+
+.calendar-wrapper table thead tr td:last-child {
+    border-radius: 0px 12px 0px 0px;
+}
+
+/* linear view */
+.calendar-wrapper.linear table thead tr {
+    height: 100%;
+}
+
+.calendar-wrapper.linear table thead tr td {
+    font-size: .5em;
+    border: solid 2px #D88558;
+    border-top: none;
+    border-bottom: none;
+}
+
+.calendar-wrapper.linear table thead tr td:first-child {
+    border-radius: 12px 0px 0px 0px;
+    border-left: none;
+}
+
+.calendar-wrapper.linear table thead tr td:last-child {
+    border-radius: 0px 12px 0px 0px;
+    border-right: none;
+}
+
+/* ------- Calendar Table Body -------- */
+
+.calendar-wrapper table tbody tr td {
+    vertical-align: top;
+    min-height: 57px;
+}
+
+.calendar-wrapper table tbody tr.days {
+    font-weight: bold;
+    color: #CB5C20;
+}
+
+/* linear view */
+.calendar-wrapper.linear table tbody tr td {
+    vertical-align: top;
+    border: solid 2px #D88558;
+    border-bottom: none;
+    border-top: none;
+    height: 38px;
+
+}
+
+.calendar-wrapper.linear table tbody tr td:first-child {
+    border-left: none;
+}
+
+.calendar-wrapper.linear table tbody tr td:last-child {
+    border-right: none;
+}
+
+/* ------- Calendar day -------- */
+
+.calendar-wrapper table tbody tr td.not-current {
+    background-color: #c6c6c6;
+    color: #ffffff;
+}
+
+.calendar-wrapper table tbody tr div.date {
+    z-index: 99;
+    width: 100%;
+    height: 19px;
+}
+
+.calendar-wrapper table tbody tr td.event {
+    background-color: #20A4CB;
+}
+
+/* ------- Post Word Count -------- */
+.calendar-wrapper table tbody tr td div.low {
+    cursor: pointer;
+    position: relative;
+    background-color: #CB2020;
+}
+
+.calendar-wrapper table tbody tr td.low:after {
+
+    display: block;
+    content: '';
+    bottom: .9em;
+    width: 100%;
+
+}
+
+.calendar-wrapper table tbody tr td div.medium {
+    cursor: pointer;
+    position: relative;
+    background-color: #DFDF20;
+}
+
+.calendar-wrapper table tbody tr td div.medium:after {
+
+    display: block;
+    content: '';
+    bottom: .9em;
+    width: 100%;
+}
+
+.calendar-wrapper table tbody tr td div.high {
+    cursor: pointer;
+    position: relative;
+    background-color: #44CB20;
+
+}
+
+.calendar-wrapper table tbody tr td div.high:after {
+    display: block;
+    content: '';
+    bottom: .9em;
+    width: 100%;
+}
+
+/* ------- Post Word Count -------- */
+.calendar-wrapper table tbody tr td div.iswordsalad {
+    cursor: pointer;
+    position: relative;
+}
+
+.calendar-wrapper table tbody tr td div.iswordsalad:after {
+    background-color: #CB2020;
+    z-index: 1;
+    display: block;
+    content: '';
+    height: 19px;
+    bottom: 0px;
+    width: 100%;
+}
+
+.calendar-wrapper table tbody tr td div.notwordsalad {
+    cursor: pointer;
+    position: relative;
+}
+
+.calendar-wrapper table tbody tr td div.notwordsalad:after {
+    background-color: #44CB20;
+    z-index: 1;
+    display: block;
+    content: '';
+    height: 19px;
+    bottom: 0px;
+    width: 100%;
+}
