@@ -101,3 +101,11 @@ function writing365_schema() {
 	);
 	return $schema;
 }
+
+/*
+ * hook_update function
+ */
+
+function writing365_update_7106(){
+	return t('Writing365 module is now updated to version 1.6');
+}
