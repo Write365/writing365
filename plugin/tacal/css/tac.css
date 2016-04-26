@@ -1,0 +1,31 @@
+/*
+ - Project: TACAL
+ - File: tac.css
+ - Author: Nathan Healea
+ - Created: 3/31/16
+*/
+@import url(https://fonts.googleapis.com/css?family=Lato:400,700);
+
+html, body{
+    margin: 0px;
+    padding: 0px;
+    background-color:#F5F2ED;
+    font-family: 'Lato', sans-serif;
+}
+
+header, section, footer{
+    clear: both;
+    width: 100%;
+}
+h3{
+    text-transform: uppercase;
+}
+
+.title{
+    text-align: center;
+}
+
+.container{
+    margin-left: 10px;
+    margin-right:10px;
+}

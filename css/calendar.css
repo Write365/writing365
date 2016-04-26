@@ -1,0 +1,50 @@
+#entry-calendar .calendar-wrapper {
+    font-family: 'Lato', sans-serif;
+    padding: 0px;
+    margin: 0px;
+
+}
+
+#entry-calendar .calendar-wrapper table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    border-radius: 12px;
+    background-color: #ffffff;
+    width: 100%;
+}
+
+#entry-calendar .calendar-wrapper table thead tr {
+    font-size: 1.2em;
+    background-color: #CB5C20 !important;
+    color: #ffffff;
+}
+
+#entry-calendar .calendar-wrapper table tbody tr.days {
+    font-weight:normal;
+
+}
+#entry-calendar .calendar-wrapper table tbody tr td {
+    width: calc(100% / 7);
+    text-align: none;
+    vertical-align: none;
+    font-size: 1em;
+    padding: 2px 2px !important;
+}
+
+
+#entry-calendar .calendar-wrapper table tbody tr td {
+    vertical-align: none;
+    height: 100%;
+}
+
+
+/* ------- Post Word Count -------- */
+#entry-calendar .calendar-wrapper table tbody tr td.event {
+    cursor: pointer;
+    position: relative;
+}
+
+#entry-calendar .calendar-wrapper table tbody tr td.event {
+    background-color: #44CB20;
+
+}
