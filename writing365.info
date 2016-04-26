@@ -20,6 +20,10 @@ core = 7.x
 
 dependencies[] = nodeaccess
 
+scripts[] = plugin/tacal/js/TACAL.js
+
+stylesheets[all][]  = plugin/tacal/css/TACAL.css
+
 files[] = tablestyle.css
 files[] = writing365.install
 files[] = writing365.module

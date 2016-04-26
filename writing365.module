@@ -620,6 +620,9 @@ function writing365_block_info()
             'administrative' => TRUE,
         ),
     );
+    $block ['calendar'] = array(
+        'info' => t('Calendar')
+    );
     return $block;
 }
 
@@ -639,6 +642,7 @@ function writing365_block_configure($delta = '')
         );
         return $form;
     }
+
 }
 
 /**
@@ -663,31 +667,92 @@ function writing365_block_view($delta = '')
     $block = array();
     switch ($delta) {
         case 'recent':
-            if (user_access ('access content')) {
-                $result = db_select ('node', 'n')
-                    -> fields ('n', array(
+            if (user_access('access content')) {
+                $result = db_select('node', 'n')
+                    ->fields('n', array(
                         'nid',
                         'title',
                         'created'))
-                    -> condition ('type', 'writing365')
-                    -> condition ('status', 1)
-                    -> condition ('uid', $uid) //added this 1-7-2015
-                    -> orderBy ('created', 'DESC')
-                    -> range (0, variable_get ('writing365_block_count', 10))
-                    -> addTag ('node_access')
-                    -> execute();
+                    ->condition('type', 'writing365')
+                    ->condition('status', 1)
+                    ->condition('uid', $uid)//added this 1-7-2015
+                    ->orderBy('created', 'DESC')
+                    ->range(0, variable_get('writing365_block_count', 10))
+                    ->addTag('node_access')
+                    ->execute();
 
                 if ($node_title_list = node_title_list($result)) {
-                    $block ['subject'] = t ('Recent journal entries');
+                    $block ['subject'] = t('Recent journal entries');
                     $block ['content']['writing365_list'] = $node_title_list;
                     $block ['content']['writing365_more'] = array(
                         '#theme' => 'more_link',
                         '#url' => 'writing365',
-                        '#title' => t ('Read the latest journal entries.'),
+                        '#title' => t('Read the latest journal entries.'),
                     );
                 }
-                break;
+
             }
+            break;
+        case 'calendar':
+            if (user_access('access content')) {
+
+                $result = db_select('node', 'n');
+
+                $result->fields('n', array('nid', 'title', 'type'))
+                    ->condition('type', 'writing365')
+                    ->condition('status', 1)
+                    ->condition('uid', $uid)
+                    ->addTag('node_access')
+                    ->addField('n', 'created', 'date');
+
+                $result->join('wordsalad_score', 'w', 'w.nid = n.nid');
+                $result->join('W365_JournalNodeData', 'wc', 'wc.nid = n.nid');
+
+
+                // Execute the query
+                $journalEntries = $result->execute()->fetchAll();
+
+                // Formatting Date for student post
+                foreach ($journalEntries as $key => $post) {
+                    if (property_exists($post, 'date')) {
+                        // January = 0 not 1
+                        $day = date('d', $post->date);
+                        $month = date('m', $post->date);
+                        $year = date('Y', $post->date);
+                        // Puts months in javasript date format
+                        // January = 0 != 1
+                        if ($month - 1 < 0) {
+                            $month = 11;
+                        } else {
+                            $month--;
+                        }
+                        // Add a 0 for months less then 10
+                        if ($month < 10) {
+                            $month = '0' . $month;
+                        }
+                        $journalEntries[$key]->date = $year . '-' . $month . '-' . $day;
+                    }
+                }
+
+                /* -- Loading TACAL -- */
+                // TACAL resources
+                /*drupal_add_css(drupal_get_path('module', 'writing365') . '/plugin/tacal/css/TACAL.css', 'file');*/
+                drupal_add_css(drupal_get_path('module', 'writing365') . '/css/calendar.css', 'file');
+                /*drupal_add_js(drupal_get_path('module', 'writing365') . '/plugin/tacal/js/TACAL.js', 'file');*/
+
+
+                // Custom js
+                drupal_add_js(drupal_get_path('module', 'writing365') . '/js/render-calendar.js', 'file');
+                drupal_add_js(array('writing' => array('posts' => json_encode($journalEntries))), array('type' => 'setting'));
+
+                $content = '<div id="entry-calendar"></div>';
+
+                $block ['subject'] = t('Calendar');
+                $block ['content'] = $content;
+
+            }
+        break;
+
     }
     return $block;
 }
