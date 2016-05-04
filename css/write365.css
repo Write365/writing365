@@ -1,0 +1,77 @@
+/*  ---- Table formatting ---- */
+table {
+
+}
+
+table tr {
+
+}
+
+table td, table th {
+
+}
+
+
+/* table header */
+table thead {
+    background-color: none;
+}
+
+table thead tr {
+    background-color: #CB5C20 !important;
+    color: #ffffff !important;
+
+}
+
+table thead tr th {
+    text-align: center;
+    vertical-align: middle;
+    font-weight: normal;
+    border-top: none;
+
+}
+table thead tr th:first-child{
+    border-radius: 12px 0px 0px 0px;
+}
+table thead tr th:last-child{
+    border-radius: 0px 12px 0px 0px;
+}
+table thead tr th a {
+    color: #ffffff !important;
+    text-decoration: none;
+}
+
+
+/* table body */
+table tbody {
+
+}
+
+table tbody tr {
+
+}
+
+table tbody tr td {
+
+}
+
+table tbody tr td
+{
+    text-align: center;
+    vertical-align: middle;
+}
+/* ---- fonts, header, text ---- */
+.section-header{
+    border-bottom: 2px solid #CB5C20;
+    color: #CB5C20;
+}
+
+/* ---- Buttons, Links ---- */
+a div.btn{
+    color: #CB5C20;
+}
+
+a div.btn:hover{
+    color: #CB5C20;
+    text-decoration: underline;
+}

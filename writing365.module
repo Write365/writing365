@@ -339,7 +339,7 @@ function writing365_form_node_form_alter(&$form, &$form_state)
 {
     $content_type = $form ['#node']->type;
     if ($content_type == 'writing365') {
-        drupal_add_css(drupal_get_path('module', 'writing365') . '/css/scorecard.css', 'file');
+        /*drupal_add_css(drupal_get_path('module', 'writing365') . '/css/scorecard.css', 'file');*/
         drupal_add_js(drupal_get_path('module', 'writing365') . '/js/show_textarea.js', 'file');
         drupal_add_js(drupal_get_path('module', 'writing365') . '/js/wordcounter.js', 'file');
         drupal_add_js(drupal_get_path('module', 'writing365') . '/js/words_per_minute.js', 'file');
@@ -361,7 +361,7 @@ function writing365_form_node_form_alter(&$form, &$form_state)
 
         $form ['title']['#default_value'] = $title;
 
-        //scorecard stuff
+       /* //scorecard stuff
         $form ['fieldset'] = array(
             '#type' => 'fieldset',
             '#title' => t('Score Card'),
@@ -374,12 +374,12 @@ function writing365_form_node_form_alter(&$form, &$form_state)
             '#markup' => writing365_scorecard($form),
             '#title' => 'Score Card',
             '#weight' => '-12',
-        );
+        );*/
 
-        $form ['space'] = array(
+        /*$form ['space'] = array(
             '#markup' => '<p>&nbsp;&nbsp;&nbsp;&nbsp;</p></br>',
             '#weight' => '-11',
-        );
+        );*/
 
         //placeholder in the form for javascript dependent variables
         $form['hidden_wordcount'] = array(

@@ -22,6 +22,7 @@ dependencies[] = nodeaccess
 
 scripts[] = plugin/tacal/js/TACAL.js
 
+stylesheets[all][]  = css/write365.css
 stylesheets[all][]  = plugin/tacal/css/TACAL.css
 
 files[] = tablestyle.css
