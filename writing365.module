@@ -339,7 +339,7 @@ function writing365_form_node_form_alter(&$form, &$form_state)
 {
     $content_type = $form ['#node']->type;
     if ($content_type == 'writing365') {
-        /*drupal_add_css(drupal_get_path('module', 'writing365') . '/css/scorecard.css', 'file');*/
+/*        drupal_add_css(drupal_get_path('module', 'writing365') . '/css/scorecard.css', 'file');*/
         drupal_add_js(drupal_get_path('module', 'writing365') . '/js/show_textarea.js', 'file');
         drupal_add_js(drupal_get_path('module', 'writing365') . '/js/wordcounter.js', 'file');
         drupal_add_js(drupal_get_path('module', 'writing365') . '/js/words_per_minute.js', 'file');
@@ -361,16 +361,16 @@ function writing365_form_node_form_alter(&$form, &$form_state)
 
         $form ['title']['#default_value'] = $title;
 
-       /* //scorecard stuff
-        $form ['fieldset'] = array(
+       //scorecard stuff
+       /* $form ['fieldset'] = array(
             '#type' => 'fieldset',
             '#title' => t('Score Card'),
             '#weight' => '-13',
             '#collapsible' => TRUE,
             '#collapsed' => FALSE,
-        );
+        );*/
 
-        $form ['fieldset']['scorecard'] = array(
+        /*$form ['fieldset']['scorecard'] = array(
             '#markup' => writing365_scorecard($form),
             '#title' => 'Score Card',
             '#weight' => '-12',
@@ -432,7 +432,7 @@ function writing365_form_node_form_alter(&$form, &$form_state)
  * @param $form
  * @return string
  */
-function writing365_scorecard($form)
+/*function writing365_scorecard($form)
 {
     //if the node exists, look at the scorecard for the person who wrote it
     $uid = get_user_id();
@@ -553,28 +553,50 @@ function writing365_scorecard($form)
 
     //return plain markup that the javascript will overwrite later
     return $output;
-}
+}*/
 
 /**
  * Implements hook_menu().
  */
 function writing365_menu()
 {
-    $items['writing365'] = array(
-        'title' => 'Journal',
-        'page callback' => 'writing365_page_last',
+    $items['write365/dashboard'] = array(
+        'title' => 'Write 365 Dashboard',
+        'description' => 'Dashboard for login user',
+        'page callback' => 'user_dashboard',
+        'access arguments' => array('create write365 content'),
+        'type' => MENU_NORMAL_ITEM,
+        'file' => 'writing365.pages.inc'
+    );
+
+    $items['write365/journal'] = array(
+        'title' => 'Write365 Journal',
+        'description' => 'Shows the dashboard for the login user',
+        'page callback' => 'user_journal',
+        'access arguments' => array('create write365 content'),
+        'type' => MENU_NORMAL_ITEM,
+        'file' => 'writing365.pages.inc'
+    );
+
+    $items['write365/dashboard/%user'] = array(
+        'title' => 'Write365 Dashboard (Admin)',
+        'description' => 'Shows the dashboard of a given user',
+        'page callback' => 'adm_user_dashboard',
+        'page arguments' => array(2),
         'access arguments' => array('administer write365'),
-        'type' => MENU_SUGGESTED_ITEM,
+        'type' => MENU_NORMAL_ITEM,
         'file' => 'writing365.pages.inc'
     );
-    $items['writing365/%user_uid_optional'] = array(
-        'title' => 'My journal',
-        'page callback' => 'writing365_page_user',
-        'page arguments' => array(1),
-        'access callback' => 'writing365_page_user_access',
-        'access arguments' => array(1),
+    $items['write365/journal/%user'] = array(
+        'title' => 'Write365 Dashboard (Admin)',
+        'description' => 'Shows the journal of a given user',
+        'page callback' => 'adm_user_journal',
+        'page arguments' => array(2),
+        'access arguments' => array('administer write365'),
+        'type' => MENU_NORMAL_ITEM,
         'file' => 'writing365.pages.inc'
     );
+
     return $items;
 }
 
@@ -865,21 +887,37 @@ function writing365_user_view($account)
     writing365_content_type_check($account);
     if (user_access('create write365 content', $account)) {
         if (_writing365_post_exists($account)) {
+            if (user_access('administer write365')){
+                $markup = l(t('View recent journal entries'), "writing365/journal/$account->uid", array(
+                    'attributes' => array(
+                        'title' => t("Read !username's latest journal entries.", array('!username' => format_username($account)))
+
+                    )));
+            }
+            else {
+                $markup = l(t('View recent journal entries'), "writing365/journal/", array(
+                    'attributes' => array(
+                        'title' => t("Read !username's latest journal entries.", array('!username' => format_username($account)))
+
+                    )));
+            }
             $account->content ['summary']['writing365'] = array(
                 '#type' => 'user_profile_item',
                 '#title' => t('Write 365 Journal'),
                 // l() escapes the attributes, so we should not escape !username here.
-                '#markup' => l(t('View recent journal entries'), "writing365/$account->uid", array(
-                        'attributes' => array(
-                            'title' => t("Read !username's latest journal entries.", array('!username' => format_username($account)))
-                        )
-                    )
-                ),
+                '#markup' => $markup
+                    ,
                 '#attributes' => array(
                     'class' => array(
                         'journal'
                     )
                 )
+            );
+
+            $account->content ['summary']['worldsalad'] = array(
+                '#type' => 'user_profile_time',
+                '#title' => t('wordsalad'),
+                '#markup' => '<h1>This is a test</h1>'
             );
         } else {
             return;
@@ -980,22 +1018,6 @@ function _writing365_post_exists($account)
         ->fetchField();
 }
 
-/*function mytest() {
-	//testing for scorecard pictures with links to updating the node
-	global $base_url;
-	$path = "$base_url/sites/all/modules/writing365/images/spare.jpg";
-	$picture = l('<img src="' . $path . '"/>', 'sites/all/modules/writing365/images/strike.jpg', array(
-			'html' => TRUE)
-		);
-	//echo $path;
-	$form ['fieldset']['test'] = array(
-		'#markup' => l('<img src="' . $path . '"/>', 'sites/all/modules/writing365/images/strike.jpg', array(
-			'html' => TRUE)
-		),
-		'#weight' => '-11',
-	);
-	return $picture;
-}*/
 
 //grabs the uid from the currently logged in user running this script
 function get_user_id()
