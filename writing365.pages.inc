@@ -184,7 +184,7 @@ function user_dashboard()
         );
     }
 
-    $build .= theme('table', array('header' => $header, 'rows' => $rows,'attributes' => array( 'class' => array('write365-table'))));
+    $build .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('write365-table'))));
 
     // Add the pager
     $build .= theme('pager');
@@ -364,7 +364,7 @@ function adm_user_dashboard($account)
         );
     }
 
-    $build .= theme('table', array('header' => $header, 'rows' => $rows,'attributes' => array( 'class' => array('write365-table'))));
+    $build .= theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('write365-table'))));
 
     // Add the pager
     $build .= theme('pager');

@@ -560,25 +560,25 @@ function writing365_form_node_form_alter(&$form, &$form_state)
  */
 function writing365_menu()
 {
-    $items['writing365/dashboard'] = array(
-        'title' => 'Write365 Dashboard',
-        'description' => 'Shows the dashboard for the logged in user. ',
+    $items['write365/dashboard'] = array(
+        'title' => 'Write 365 Dashboard',
+        'description' => 'Dashboard for login user',
         'page callback' => 'user_dashboard',
         'access arguments' => array('create write365 content'),
         'type' => MENU_NORMAL_ITEM,
         'file' => 'writing365.pages.inc'
     );
 
-    $items['writing365/journal'] = array(
+    $items['write365/journal'] = array(
         'title' => 'Write365 Journal',
-        'description' => 'Shows the dashboard for the loged in user.',
+        'description' => 'Shows the dashboard for the login user',
         'page callback' => 'user_journal',
         'access arguments' => array('create write365 content'),
         'type' => MENU_NORMAL_ITEM,
         'file' => 'writing365.pages.inc'
     );
 
-    $items['writing365/dashboard/%user'] = array(
+    $items['write365/dashboard/%user'] = array(
         'title' => 'Write365 Dashboard (Admin)',
         'description' => 'Shows the dashboard of a given user',
         'page callback' => 'adm_user_dashboard',
@@ -587,7 +587,7 @@ function writing365_menu()
         'type' => MENU_NORMAL_ITEM,
         'file' => 'writing365.pages.inc'
     );
-    $items['writing365/journal/%user'] = array(
+    $items['write365/journal/%user'] = array(
         'title' => 'Write365 Dashboard (Admin)',
         'description' => 'Shows the journal of a given user',
         'page callback' => 'adm_user_journal',
@@ -887,16 +887,26 @@ function writing365_user_view($account)
     writing365_content_type_check($account);
     if (user_access('create write365 content', $account)) {
         if (_writing365_post_exists($account)) {
+            if (user_access('administer write365')){
+                $markup = l(t('View recent journal entries'), "writing365/journal/$account->uid", array(
+                    'attributes' => array(
+                        'title' => t("Read !username's latest journal entries.", array('!username' => format_username($account)))
+
+                    )));
+            }
+            else {
+                $markup = l(t('View recent journal entries'), "writing365/journal/", array(
+                    'attributes' => array(
+                        'title' => t("Read !username's latest journal entries.", array('!username' => format_username($account)))
+
+                    )));
+            }
             $account->content ['summary']['writing365'] = array(
                 '#type' => 'user_profile_item',
                 '#title' => t('Write 365 Journal'),
                 // l() escapes the attributes, so we should not escape !username here.
-                '#markup' => l(t('View recent journal entries'), "writing365/$account->uid", array(
-                        'attributes' => array(
-                            'title' => t("Read !username's latest journal entries.", array('!username' => format_username($account)))
-                        )
-                    )
-                ),
+                '#markup' => $markup
+                    ,
                 '#attributes' => array(
                     'class' => array(
                         'journal'
