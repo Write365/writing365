@@ -759,7 +759,7 @@ function writing365_block_view($delta = '')
                 /* -- Loading TACAL -- */
                 // TACAL resources
                 /*drupal_add_css(drupal_get_path('module', 'writing365') . '/plugin/tacal/css/TACAL.css', 'file');*/
-                drupal_add_css(drupal_get_path('module', 'writing365') . '/css/calendar.css', 'file');
+                drupal_add_css(drupal_get_path('module', 'writing365') . '/css/entry-calendar.css', 'file');
                 /*drupal_add_js(drupal_get_path('module', 'writing365') . '/plugin/tacal/js/TACAL.js', 'file');*/
 
 
