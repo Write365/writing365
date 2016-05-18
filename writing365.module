@@ -293,7 +293,7 @@ function writing365_node_view($node, $view_mode)
             // This goes to l(), which escapes !username in both title and attributes.
             $links['journal_usernames_journal'] = array(
                 'title' => t("!username's journal", array('!username' => format_username($node))),
-                'href' => "writing365/$node->uid",
+                'href' => "write365/journal/$node->uid",
                 'attributes' => array(
                     'title' => t("Read !username's latest journal entries.", array('!username' => format_username($node)))
                 )
@@ -561,7 +561,7 @@ function writing365_form_node_form_alter(&$form, &$form_state)
 function writing365_menu()
 {
     $items['write365/dashboard'] = array(
-        'title' => 'Write 365 Dashboard',
+        'title' => 'Write365 Dashboard',
         'description' => 'Dashboard for login user',
         'page callback' => 'user_dashboard',
         'access arguments' => array('create write365 content'),
@@ -618,7 +618,7 @@ function writing365_menu_local_tasks_alter(&$data, $router_item, $root_path)
             );
         }
     }    // Provide a helper action link to the author on the 'writing365/%' page.
-    elseif ($root_path == 'writing365/%' && $router_item ['page_arguments'][0]->uid == get_user_id()) {
+    elseif ($root_path == 'write365/journal/%' && $router_item ['page_arguments'][0]->uid == get_user_id()) {
         $data ['actions']['output']['writing365'] = array(
             '#theme' => 'menu_local_action',
         );
@@ -643,7 +643,9 @@ function writing365_block_info()
         ),
     );
     $block ['calendar'] = array(
-        'info' => t('Calendar')
+        'info' => t('Calendar'),
+        'status' => TRUE,
+        'region' => 'sidebar_first',
     );
     return $block;
 }
@@ -888,14 +890,14 @@ function writing365_user_view($account)
     if (user_access('create write365 content', $account)) {
         if (_writing365_post_exists($account)) {
             if (user_access('administer write365')){
-                $markup = l(t('View recent journal entries'), "writing365/journal/$account->uid", array(
+                $markup = l(t('View recent journal entries'), "write365/journal/$account->uid", array(
                     'attributes' => array(
                         'title' => t("Read !username's latest journal entries.", array('!username' => format_username($account)))
 
                     )));
             }
             else {
-                $markup = l(t('View recent journal entries'), "writing365/journal/", array(
+                $markup = l(t('View recent journal entries'), "write365/journal", array(
                     'attributes' => array(
                         'title' => t("Read !username's latest journal entries.", array('!username' => format_username($account)))
 
@@ -957,7 +959,7 @@ function writing365_view($node, $view_mode)
             l(t('Writing 365'), 'writing365'),
             l(t("!name's journal", array(
                 '!name' => format_username($node)
-            )), 'writing365/' . $node->uid)
+            )), 'write365/journal/' . $node->uid)
         ));
     }
     return $node;
