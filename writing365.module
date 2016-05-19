@@ -645,7 +645,12 @@ function writing365_block_info()
     $block ['calendar'] = array(
         'info' => t('Calendar'),
         'status' => TRUE,
-        'region' => 'sidebar_first',
+        'region' => 'primary_sidebar',
+    );
+    $block ['calendar_legend'] = array(
+        'info' => t('Calendar Legend'),
+        'status' => TRUE,
+        'region' => 'primary_sidebar',
     );
     return $block;
 }
@@ -776,7 +781,35 @@ function writing365_block_view($delta = '')
 
             }
         break;
-
+        case 'calendar_legend':
+            if (user_access('access content')) {
+                $content = '<div class="tacal-legend">
+  <div class="title-legend">
+    <span>TACAL Legend</span>
+  </div>
+  <span class="date-title-legend">Date of the Month</span>
+  <hr class="tacal-hr-legend"/>
+  <div class="wordcount-legend">
+    <span class="wordcount-title-legend">Word Count Scale</span>
+    <div class="wordcount-scale-wrapper">
+      <span class="low-legend">1 - 349</span>
+      <span class="medium-legend">350 - 370</span>
+      <span class="high-legend">371 - up</span>
+    </div>
+  </div>
+  <hr class="tacal-hr-legend"/>
+  <div class="wordsalad-legend">
+    <span class="wordsalad-title-legend">WordSalad Legend</span>
+    <div class="wordsalad-wrapper">
+      <span class="iswordsalad-legend">Is</span>
+      <span class="notwordsalad-legend">Not</span>
+    </div>
+  </div>
+</div>';
+                $block['subject'] = t('Calendar Legend');
+                $block ['content'] = $content;
+            }
+        break;
     }
     return $block;
 }

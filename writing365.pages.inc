@@ -55,7 +55,7 @@ function user_dashboard()
     $build = "";
 
     // If WordSalad is installed and enabled then show dashboard with WordSalad information.
-    if(module_exists('wordsalad')) {
+    if (module_exists('wordsalad')) {
 
         // Selecting post for students
         $result = db_select('node', 'n');
@@ -191,8 +191,7 @@ function user_dashboard()
         $build .= theme('pager');
 
 
-    }
-    else{ // Show Dashboard with out WordSald informaion.
+    } else { // Show Dashboard with out WordSald informaion.
         // Selecting post for students
         $result = db_select('node', 'n');
 
@@ -356,7 +355,7 @@ function adm_user_dashboard($account)
     $build = "";
 
     // If WordSalad is installed and enabled then show dashboard with WordSalad information.
-    if(module_exists('wordsalad')) {
+    if (module_exists('wordsalad')) {
 
         // Selecting post for students
         $result = db_select('node', 'n');
@@ -491,8 +490,7 @@ function adm_user_dashboard($account)
         // Add the pager
         $build .= theme('pager');
 
-    }
-    else{
+    } else {
         // Selecting post for students
         $result = db_select('node', 'n');
 
