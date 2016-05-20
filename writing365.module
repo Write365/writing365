@@ -651,6 +651,8 @@ function writing365_block_info()
         'info' => t('Calendar Legend'),
         'status' => TRUE,
         'region' => 'primary_sidebar',
+        'visibility' => BLOCK_VISIBILITY_LISTED,
+        'pages' => array('*/dashboard','*/course-detail/*', '*/student-detail/*','*/adm-course-detail/*', '*/adm-student-detail/*')
     );
     return $block;
 }
@@ -776,7 +778,7 @@ function writing365_block_view($delta = '')
 
                 $content = '<div id="entry-calendar"></div>';
 
-                $block ['subject'] = t('Calendar');
+                //$block ['subject'] = t('Calendar');
                 $block ['content'] = $content;
 
             }
