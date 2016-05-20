@@ -645,14 +645,18 @@ function writing365_block_info()
     $block ['calendar'] = array(
         'info' => t('Calendar'),
         'status' => TRUE,
-        'region' => 'primary_sidebar',
+        'region' => 'sidebar_first',
     );
     $block ['calendar_legend'] = array(
         'info' => t('Calendar Legend'),
         'status' => TRUE,
-        'region' => 'primary_sidebar',
+        'region' => 'sidebar_first',
         'visibility' => BLOCK_VISIBILITY_LISTED,
-        'pages' => array('*/dashboard','*/course-detail/*', '*/student-detail/*','*/adm-course-detail/*', '*/adm-student-detail/*')
+        'pages' => '*/dashboard
+*/course-detail/*
+*/student-detail/*
+*/adm-course-detail/*
+*/adm-student-detail/*'
     );
     return $block;
 }
