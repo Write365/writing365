@@ -45,6 +45,30 @@
 }
 
 #entry-calendar .calendar-wrapper table tbody tr td.event {
-    background-color: #20A4CB;
+    background-color: none !important;
 
+}
+
+
+
+
+#entry-calendar .calendar-wrapper table tbody tr td.today {
+    position: relative;
+}
+
+#entry-calendar .calendar-wrapper table tbody tr td.today:after {
+    background: #20A4CB;
+    border-radius: 25%;
+    bottom: .2em;
+    display: block;
+    content: '';
+    height: .2em;
+    left: 50%;
+    margin: -.25em 0 0 -.25em;
+    position: absolute;
+    width: .5em;
+}
+
+#entry-calendar .calendar-wrapper table tbody tr td.event.today:after{
+    background:lightgrey;
 }

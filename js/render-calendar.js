@@ -9,10 +9,9 @@
 (function ($) {
     $(document).ready(function () {
 
-
         var posts = JSON.parse(Drupal.settings.writing.posts);
 
-
+        
         var options = {
             id: 'entry-calendar',
             event: posts,

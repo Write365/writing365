@@ -143,9 +143,9 @@
     height: 19px;
 }
 
-.calendar-wrapper table tbody tr td.event {
-    background-color: #20A4CB;
-}
+/*.calendar-wrapper table tbody tr td.event {*/
+    /*background-color: #20A4CB;*/
+/*}*/
 
 /* ------- Post Word Count -------- */
 .calendar-wrapper table tbody tr td div.low {
