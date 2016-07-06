@@ -33,7 +33,7 @@ var TACAL = function (args) {
 
     // Set the current month, year
     var d = new Date();
-
+    this.today = d;
     this.currMonth = d.getMonth();
     this.currYear = d.getFullYear();
     this.currDay = d.getDate();
@@ -618,6 +618,8 @@ TACAL.prototype.renderDate = function (date) {
     var id = date.id;
     var innerhtml = '';
     var event = '';
+    var aTagStart = '';
+    var aTagEnd = '';
 
     for (var s in this.show) {
         switch (this.show[s]) {
@@ -626,7 +628,9 @@ TACAL.prototype.renderDate = function (date) {
                 break;
             case 'event':
                 if (keys.indexOf('event') != -1 && date.event != null) {
-                    css += 'event';
+                    css += 'event ';
+                    aTagStart = '<a href="/node/' + date['event'].nid + '" >';
+                    aTagEnd = '</a>';
                 }
                 break;
             case 'is_wordsalad':
@@ -647,6 +651,7 @@ TACAL.prototype.renderDate = function (date) {
             case 'wordcount':
                 // check for an event on the day.
                 if (keys.indexOf('event') != -1 && date.event != null) {
+
 
                     // Applies css: for wordcount of student post.
                     if (date['event'].hasOwnProperty('wordcount')) {
@@ -676,9 +681,17 @@ TACAL.prototype.renderDate = function (date) {
         }
     }
 
+    // TODO: Add to Official TACAL Repo, Temp fix for now
+    // TODO: https://github.com/Write365/TACAL    (July 1, 2016)
+    if(date['year'] == this.today.getFullYear() && date['date'] == this.today.getDate() && date['month'] == this.today.getMonth()){
+        css += 'today ';
+    }
+
     return '<td class="' + css + '" id="' + id + '">'
+        + aTagStart
         + innerhtml
         + event
+        + aTagEnd
         + '</td>';
 
 };
