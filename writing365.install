@@ -106,6 +106,10 @@ function writing365_schema() {
  * hook_update function
  */
 
+function writing365_update_7107(){
+    return t('Writing365 module is now updated to version 1.7');
+}
+
 function writing365_update_7106(){
 	return t('Writing365 module is now updated to version 1.6');
 }
