@@ -1,0 +1,195 @@
+/*  ---- Table formatting ---- */
+table.write365-table {
+
+}
+
+table.write365-table tr {
+
+}
+
+table.write365-table td, table.write365-table th {
+
+}
+
+/* table.write365-table header */
+table.write365-table thead {
+    background-color: none;
+}
+
+table.write365-table thead tr {
+    background-color: #CB5C20 !important;
+    color: #ffffff !important;
+
+}
+
+table.write365-table thead tr th {
+    text-align: center;
+    vertical-align: middle;
+    font-weight: normal;
+    border-top: none;
+
+}
+
+table.write365-table thead tr th:first-child {
+    border-radius: 12px 0px 0px 0px;
+}
+
+table.write365-table thead tr th:last-child {
+    border-radius: 0px 12px 0px 0px;
+}
+
+table.write365-table thead tr th a {
+    color: #ffffff !important;
+    text-decoration: none;
+}
+
+/* table.write365-table body */
+table.write365-table tbody {
+
+}
+
+table.write365-table tbody tr {
+
+}
+
+table.write365-table tbody tr td {
+
+}
+
+table.write365-table tbody tr td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* ---- fonts, header, text ---- */
+.section-header {
+    border-bottom: 2px solid #CB5C20;
+    color: #CB5C20;
+}
+
+/* ---- Buttons, Links ---- */
+a div.btn {
+    color: #CB5C20;
+}
+
+a div.btn:hover {
+    color: #CB5C20;
+    text-decoration: underline;
+}
+
+/* --- Calendar legend --- */
+.tacal-legend {
+    text-align: center;
+    margin: 0 auto;
+    border: solid 2px #CB5C20;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+}
+
+span.wordcount-title-legend,
+span.wordsalad-title-legend,
+span.date-title-legend {
+    font-weight: bolder;
+}
+
+.title-legend {
+    line-height: 40px;
+    font-size: 1.2em;
+    background-color: #CB5C20;
+    border: solid 2px #CB5C20;
+    border-top-right-radius: 6px;
+    border-top-left-radius: 6px;
+    color:#ffffff;
+    text-transform: uppercase;
+
+}
+
+.tacal-hr-legend {
+    height: 1px;
+    padding: 0px;
+    margin: 2px;
+    background: #CB5C20;
+    border: none;
+    outline: none;
+    position: relative;
+}
+
+/* --- calendar legend -- */
+
+.date-legend,
+.wordcount-legend,
+.wordsalad-legend {
+    height: 30px;
+    padding: 0px;
+    margin: 0px;
+}
+
+/* -- date legend -- */
+
+.date-title-legend {
+    line-height: 30px;
+}
+
+/* -- wordcount legend -- */
+.wordcount-legend {
+    width: 100%;
+    height: 40px;
+}
+
+.wordcount-title-legend {
+    line-height: 10px;
+}
+
+.wordcount-scale-wrapper {
+    margin: 0 auto;
+    display: block;
+    height: 10px;
+}
+
+.low-legend,
+.medium-legend,
+.high-legend {
+    float: left;
+    width: calc(100% / 3);
+    line-height: 20px;
+}
+
+.low-legend {
+    background-color: #CB2020;
+}
+
+.medium-legend {
+    background-color: #DFDF20;
+}
+
+.high-legend {
+    background-color: #44CB20;
+}
+
+/* --- WordSalad Legend --- */
+.wordsalad-title-legend {
+    line-height: 20px;
+}
+
+.wordsalad-legend {
+    height: 40px;
+    width: 100%;
+}
+
+.iswordsalad-legend,
+.notwordsalad-legend {
+    float: left;
+    width: calc(100% / 2);
+    line-height: 20px;
+}
+
+.iswordsalad-legend {
+    background-color: #CB2020;
+}
+
+.notwordsalad-legend {
+    background-color: #44CB20;
+}
